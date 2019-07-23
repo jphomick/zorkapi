@@ -61,8 +61,8 @@ public class ZorkController {
 
     @RequestMapping("/move_south")
     public @ResponseBody String moveDown() {
-        if (checkMove(currX, currY - 1)) {
-            currY--;
+        if (checkMove(currX, currY + 1)) {
+            currY++;
             Room currRoom = roomRepository.findByXAndY(currX, currY);
             return "You moved to " + currRoom.getName() + "!";
         }
@@ -72,8 +72,8 @@ public class ZorkController {
 
     @RequestMapping("/move_west")
     public @ResponseBody String moveLeft() {
-        if (checkMove(currX, currY - 1)) {
-            currY--;
+        if (checkMove(currX - 1, currY)) {
+            currX--;
             Room currRoom = roomRepository.findByXAndY(currX, currY);
             return "You moved to " + currRoom.getName() + "!";
         }
@@ -83,8 +83,8 @@ public class ZorkController {
 
     @RequestMapping("/move_east")
     public @ResponseBody String moveRight() {
-        if (checkMove(currX, currY - 1)) {
-            currY--;
+        if (checkMove(currX + 1, currY)) {
+            currX++;
             Room currRoom = roomRepository.findByXAndY(currX, currY);
             return "You moved to " + currRoom.getName() + "!";
         }
@@ -94,7 +94,7 @@ public class ZorkController {
 
     private boolean checkMove(int moveX, int moveY) {
         Room currRoom = roomRepository.findByXAndY(currX, currY);
-        Room toRoom = roomRepository.findByXAndY(currX, currY - 1);
+        Room toRoom = roomRepository.findByXAndY(moveX, moveY);
 
         if (currRoom != null && toRoom != null) {
             Passage pass = passageRepository.findByRoomFromAndRoomTo(currRoom.getId(), toRoom.getId());
