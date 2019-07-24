@@ -6,4 +6,5 @@ import java.util.ArrayList;
 
 public interface ThingRepository extends CrudRepository<Thing, Long> {
     ArrayList<Thing> findAllByType(String type);
+    Thing findByName(String name);
 }

@@ -33,6 +33,10 @@ public class Person {
         this.name = name;
         health = 100;
         money = 0;
+        status = "";
+    }
+
+    public Person() {
     }
 
     public long getId() {
