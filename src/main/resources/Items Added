@@ -1,0 +1,11 @@
+create database zork;
+use zork;
+
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Gold", 100, 250, "~", 1, 0, "take", "money");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Potion", 20, 20, "~", 1, 0, "take use", "potion");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Stick", 1, 2, "~", 1, 0, "take equip", "weapon");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Bat", 2, 3, "~", 4, 0, "attack", "enemy");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Slime", 1, 2, "~", 10, 0, "attack", "enemy");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Brass Key", 1, 1, "~", 1, 0, "take", "key");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Wooden Chest", 500, 800, "Brass Key", 1, 0, "open", "chest");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Golf Club", 3, 4, "~", 1, 0, "take equip", "weapon");

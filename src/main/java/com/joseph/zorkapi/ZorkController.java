@@ -36,24 +36,27 @@ public class ZorkController {
     // Until we have roles
     private long playerId;
 
+    private Active getOne(ArrayList<Active> list) {
+        Active active = null;
+        if (list != null && list.size() > 0) {
+            active = list.get(0);
+        }
+        return active;
+    }
+
     @RequestMapping("/act_{command}_{target}")
     public @ResponseBody String command(@PathVariable("command") String command, @PathVariable("target") String target) {
+        command = command.replace("-", " ");
+        target = target.replace("-", " ");
         Person player = personRepository.findById(playerId).get();
         Room room = roomRepository.findById(player.getRoomId()).get();
         Thing thing = thingRepository.findByName(target);
         if (thing == null) {
             return "Target not found.";
         }
-        ArrayList<Active> temp = activeRepository.findAllByRoomIdAndThingId(room.getId(), thing.getId());
-        Active active = null;
-        if (temp != null && temp.size() > 0) {
-            active = temp.get(0);
-        }
+        Active active = getOne(activeRepository.findAllByRoomIdAndThingId(room.getId(), thing.getId()));
         if (active == null) {
-            temp = activeRepository.findAllByInvIdAndThingId(player.getId(), thing.getId());
-            if (temp != null && temp.size() > 0) {
-                active = temp.get(0);
-            }
+            active = getOne(activeRepository.findAllByInvIdAndThingId(player.getId(), thing.getId()));
         }
         String msg = "Unknown Command";
         if (active != null && thing.getActions().contains(command)) {
@@ -68,6 +71,20 @@ public class ZorkController {
                     active.setRoomId(-1);
 
                     msg = thing.getName() + " has been added to your inventory!";
+                }
+            }
+            if (command.toLowerCase().contains("open")) {
+                Active key = getOne(activeRepository.findAllByInvIdAndThingId(player.getId(),
+                        thingRepository.findByName(thing.getCode()).getId()));
+                if (key == null) {
+                    msg = "You need a certain key to open this chest.";
+                } else {
+                    player.setMoney(player.getMoney() + active.getValue());
+                    msg = "You open the " + thing.getName() + ".\n"
+                            + thing.getName() + " is worth $" + active.getValue() + "!";
+                    active.setRoomId(-1);
+                    key.setInvId(-1);
+                    activeRepository.save(key);
                 }
             }
             if (command.toLowerCase().contains("use")) {
@@ -106,6 +123,8 @@ public class ZorkController {
                     active.setRoomId(-1);
                 }
             }
+        } else if (!thing.getActions().contains(command)) {
+            msg = "The command [" + command + "] cannot be used on target [" + target + "]";
         }
         if (active == null) {
             msg = thing.getName() + " does not exist in this room!";
@@ -393,6 +412,8 @@ public class ZorkController {
         ArrayList<Thing> enemies = thingRepository.findAllByType("enemy");
         ArrayList<Thing> items = thingRepository.findAllByType("weapon");
         items.addAll(thingRepository.findAllByType("potion"));
+        items.addAll(thingRepository.findAllByType("key"));
+        items.addAll(thingRepository.findAllByType("chest"));
 
         if (r.nextInt(4) == 1) {
             Thing toAdd = money.get(r.nextInt(money.size()));
@@ -402,7 +423,7 @@ public class ZorkController {
             Thing toAdd = enemies.get(r.nextInt(enemies.size()));
             activeRepository.save(newObject(toAdd, room));
         }
-        if (r.nextInt(4) == 1) {
+        if (r.nextInt(2) == 1) {
             Thing toAdd = items.get(r.nextInt(items.size()));
             activeRepository.save(newObject(toAdd, room));
         }
