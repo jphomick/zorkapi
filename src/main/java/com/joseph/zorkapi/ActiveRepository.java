@@ -11,4 +11,5 @@ public interface ActiveRepository extends CrudRepository<Active, Long> {
     ArrayList<Active> findAllByInvIdAndThingId(long invId, long thingId);
     //Active findByInvIdAndThingId(long invId, long thingId);
     Active findByValue(int value);
+    ArrayList<Active> findAllByBlockId(long id);
 }

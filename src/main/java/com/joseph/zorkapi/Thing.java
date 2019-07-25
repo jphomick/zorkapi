@@ -38,7 +38,11 @@ public class Thing {
     @NonNull
     private String type;
 
-    public Thing(String name, int value, int value2, String code, int conquer, int block, String actions, String type) {
+    @NonNull
+    private String status;
+
+    public Thing(String name, int value, int value2, String code, int conquer, int block, String actions,
+                 String type, String status) {
         this.name = name;
         this.value = value;
         this.value2 = value2;
@@ -47,6 +51,7 @@ public class Thing {
         this.block = block;
         this.actions = actions;
         this.type = type;
+        this.status = status;
     }
 
     public Thing() {
@@ -122,5 +127,13 @@ public class Thing {
 
     public void setValue2(int value2) {
         this.value2 = value2;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

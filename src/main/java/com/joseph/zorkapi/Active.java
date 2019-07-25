@@ -31,13 +31,17 @@ public class Active {
     @NonNull
     private long invId;
 
-    public Active(long thingId, int value, int conquer, long roomId, long blockId, long invId) {
+    @NonNull
+    private String status;
+
+    public Active(long thingId, int value, int conquer, long roomId, long blockId, long invId, String status) {
         this.thingId = thingId;
         this.value = value;
         this.conquer = conquer;
         this.roomId = roomId;
         this.blockId = blockId;
         this.invId = invId;
+        this.status = status;
     }
 
     public Active() {
@@ -97,5 +101,13 @@ public class Active {
 
     public void setInvId(long invId) {
         this.invId = invId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

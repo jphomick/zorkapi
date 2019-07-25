@@ -1,13 +1,13 @@
 package com.joseph.zorkapi;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 @Controller
@@ -28,10 +28,18 @@ public class ZorkController {
     @Autowired
     PersonRepository personRepository;
 
+    @Autowired
+    AmplifyRepository amplifyRepository;
+
+    @Autowired
+    DropRepository dropRepository;
+
     Random r = new Random();
 
     // For auto room naming
     private int curr = 1;
+
+    private ArrayList<String> roomNames = new ArrayList<>();
 
     // Until we have roles
     private long playerId;
@@ -51,6 +59,7 @@ public class ZorkController {
         Person player = personRepository.findById(playerId).get();
         Room room = roomRepository.findById(player.getRoomId()).get();
         Thing thing = thingRepository.findByName(target);
+        Active equip = activeRepository.findByValue(-100);
         if (thing == null) {
             return "Target not found.";
         }
@@ -74,34 +83,60 @@ public class ZorkController {
                 }
             }
             if (command.toLowerCase().contains("open")) {
+                String object = activeThing(active).getType();
                 Active key = getOne(activeRepository.findAllByInvIdAndThingId(player.getId(),
                         thingRepository.findByName(thing.getCode()).getId()));
                 if (key == null) {
-                    msg = "You need a certain key to open this chest.";
+                    msg = "You need a certain key to open this " + object + ".";
                 } else {
-                    player.setMoney(player.getMoney() + active.getValue());
-                    msg = "You open the " + thing.getName() + ".\n"
-                            + thing.getName() + " is worth $" + active.getValue() + "!";
-                    active.setRoomId(-1);
-                    key.setInvId(-1);
+                    if (active.getStatus().equals("")) {
+                        player.setMoney(player.getMoney() + active.getValue());
+                        msg = "You open the " + thing.getName() + ".\n"
+                                + "$" + active.getValue() + " is inside!";
+                    } else if (active.getStatus().contains("none")) {
+                        msg = "You opened the " + thing.getName() + "!";
+                    } else {
+                        Thing insideStats = thingRepository.findByName(active.getStatus());
+                        Active inside = newObject(insideStats, room);
+                        inside.setRoomId(-1);
+                        inside.setInvId(player.getId());
+                        activeRepository.save(inside);
+                        msg = "You found a " + insideStats.getName() + " inside the " + object + "!";
+                    }
+                    hide(active);
+                    hide(key);
                     activeRepository.save(key);
                 }
             }
             if (command.toLowerCase().contains("use")) {
-                active.setInvId(-1);
-                active.setRoomId(-1);
-                int heal = r.nextInt(1 + thing.getValue2() - thing.getValue()) + thing.getValue();
-                player.setHealth(player.getHealth() + heal);
-                if (player.getHealth() > 100) {
-                    player.setHealth(100);
+                if (thing.getType().equals("potion")) {
+                    hide(active);
+                    int heal = r.nextInt(1 + thing.getValue2() - thing.getValue()) + thing.getValue();
+                    player.setHealth(player.getHealth() + heal);
+                    if (player.getHealth() > 100) {
+                        player.setHealth(100);
+                    }
+                    msg = "You used the " + thing.getName() + " and restored " +
+                            heal + " health!\nCurrent health: " + player.getHealth() + "/100";
+                } else if (active.getStatus().contains("fire")) {
+                    if (equip != null && equip.getStatus().contains("flammable")) {
+                        if (equip.getStatus().contains("fire")) {
+                            msg = "Your " + activeThing(equip).getName() + " is already lit!";
+                        } else {
+                            equip.setStatus(("fire " + equip.getStatus()).trim());
+                            msg = "You lit the " + activeThing(equip).getName() + "!";
+                            activeRepository.save(equip);
+                        }
+                    } else if (equip != null) {
+                        msg = "You cannot light " + activeThing(equip).getName() + " on fire!";
+                    } else {
+                        msg = "You have nothing equipped!";
+                    }
                 }
-                msg = "You used the " + thing.getName() + " and restored" +
-                        heal + " health!\nCurrent health: " + player.getHealth() + "/100";
             }
             if (command.toLowerCase().contains("equip")) {
-                Active prev = activeRepository.findByValue(-100);
-                if (prev != null) {
-                    prev.setValue(0);
+                if (equip != null) {
+                    equip.setValue(0);
                 }
                 active.setValue(-100);
                 active.setInvId(player.getId());
@@ -109,18 +144,45 @@ public class ZorkController {
                 msg = "You equipped the " + thing.getName() + "!";
             }
             if (command.toLowerCase().contains("attack")) {
-                Active weapon = activeRepository.findByValue(-100);
-                if (weapon == null) {
-                    return "You attack with your fists!\n...0 damage!";
+                if (equip == null) {
+                    return "You attacked the " + thing.getName() + "!\n...0 damage!";
                 }
-                Thing weaponStats = thingRepository.findById(weapon.getThingId()).get();
-                int damage = r.nextInt(1 + weaponStats.getValue2() - weaponStats.getValue())
-                        + weaponStats.getValue();
-                active.setConquer(active.getConquer() - damage);
-                msg = "You attacked the " + thing.getName() + "!\n" + damage + " damage!";
+                if (thing.getCode().equals("~")) {
+                    Thing weaponStats = thingRepository.findById(equip.getThingId()).get();
+                    int damage = r.nextInt(1 + weaponStats.getValue2() - weaponStats.getValue())
+                            + weaponStats.getValue();
+                    damage += amplify(equip);
+                    active.setConquer(active.getConquer() - damage);
+                    msg = "You attacked the " + thing.getName() + "!\n" + damage + " damage!";
+                } else {
+                    Thing weaponStats = thingRepository.findById(equip.getThingId()).get();
+                    int base = r.nextInt(1 + weaponStats.getValue2() - weaponStats.getValue())
+                            + weaponStats.getValue();
+                    base += amplify(equip);
+                    String code = thing.getCode();
+                    for (String item : code.split("-*[ ()+*/]+")) {
+                        if (item.length() > 0 && !NumberHelper.isNumber(item)) {
+                            if (item.contains("value")) {
+                                code = code.replace("value", String.valueOf(base));
+                            } else if (equip.getStatus().contains(item)) {
+                                code = code.replace(item, "1");
+                            } else {
+                                code = code.replace(item, "0");
+                            }
+                        }
+                    }
+                    int damage = (int)MathHelper.eval(code);
+                    active.setConquer(active.getConquer() - damage);
+                    msg = "You attacked the " + thing.getName() + "!\n" + damage + " damage!";
+                }
                 if (active.getConquer() <= 0) {
                     msg += "\nYou defeated the " + thing.getName() + "!";
-                    active.setRoomId(-1);
+                    hide(active);
+                    ArrayList<Thing> drops = getDrops(active);
+                    for (Thing drop : drops) {
+                        msg += "\nA " + drop.getName() + " has dropped!";
+                        newObject(drop, room);
+                    }
                 }
             }
         } else if (!thing.getActions().contains(command)) {
@@ -152,11 +214,11 @@ public class ZorkController {
                 Thing enemyStats = thingRepository.findById(active.getThingId()).get();
                 int damage = r.nextInt(1 + enemyStats.getValue2() - enemyStats.getValue()) + enemyStats.getValue();
                 player.setHealth(player.getHealth() - damage);
-                msg += enemyStats.getName() + " attacks you for " + damage + " damage!";
+                msg += enemyStats.getName() + " attacks you for " + damage + " damage!\n";
             }
             personRepository.save(player);
         }
-        return msg;
+        return msg.trim();
     }
 
     @RequestMapping("/status")
@@ -200,29 +262,41 @@ public class ZorkController {
 
     @RequestMapping("/check_move")
     public @ResponseBody String moveCheck() {
+        return moveCheck(true);
+    }
+
+    private String moveCheck(boolean attack) {
         Person player = personRepository.findById(playerId).get();
         String result = "";
         if (checkMove(getX(player), getY(player) - 1)) {
             Room currRoom = roomRepository.findByXAndY(getX(player), getY(player) - 1);
-            result += currRoom.getName() + " is to the north.\n";
-        }
-        if (checkMove(getX(player) - 1, getY(player))) {
-            Room currRoom = roomRepository.findByXAndY(getX(player) - 1, getY(player));
-            result += currRoom.getName() + " is to the west.\n";
+            result += currRoom.getName() +
+                    " is to the north. " + getBlocked(getX(player), getY(player) - 1) + "\n";
         }
         if (checkMove(getX(player), getY(player) + 1)) {
             Room currRoom = roomRepository.findByXAndY(getX(player), getY(player) + 1);
-            result += currRoom.getName() + " is to the south.\n";
+            result += currRoom.getName() +
+                    " is to the south. " + getBlocked(getX(player), getY(player) + 1) + "\n";
         }
         if (checkMove(getX(player) + 1, getY(player))) {
             Room currRoom = roomRepository.findByXAndY(getX(player) + 1, getY(player));
-            result += currRoom.getName() + " is to the east.\n";
+            result += currRoom.getName() +
+                    " is to the east. " + getBlocked(getX(player) + 1, getY(player)) + "\n";
+        }
+        if (checkMove(getX(player) - 1, getY(player))) {
+            Room currRoom = roomRepository.findByXAndY(getX(player) - 1, getY(player));
+            result += currRoom.getName() +
+                    " is to the west. " + getBlocked(getX(player) - 1, getY(player)) + "\n";
         }
 
         if (result.equals("")) {
             result = "You have nowhere to move.";
         }
-        return enemyAttack(result);
+        if (attack) {
+            return enemyAttack(result);
+        } else {
+            return result;
+        }
     }
 
     private String seeRoom() {
@@ -232,13 +306,19 @@ public class ZorkController {
         for (Active active : activeRepository.findAllByRoomId(room.getId())) {
             result += thingRepository.findById(active.getThingId()).get().getName() + "\n";
         }
+        if (inInventory("Compass")) {
+            result += "---\n" + moveCheck(false);
+        }
         return result;
     }
 
     @RequestMapping("/move_north")
     public @ResponseBody String moveUp() {
         Person player = personRepository.findById(playerId).get();
-        if (checkMove(getX(player), getY(player) - 1)) {
+        String blocked = getBlocked(getX(player), getY(player) - 1);
+        if (!blocked.equals("")) {
+            return blocked;
+        } else if (checkMove(getX(player), getY(player) - 1)) {
             Room currRoom = roomRepository.findByXAndY(getX(player), getY(player) - 1);
             player.setRoomId(currRoom.getId());
             personRepository.save(player);
@@ -251,21 +331,11 @@ public class ZorkController {
     @RequestMapping("/move_south")
     public @ResponseBody String moveDown() {
         Person player = personRepository.findById(playerId).get();
-        if (checkMove(getX(player), getY(player) + 1)) {
+        String blocked = getBlocked(getX(player), getY(player) + 1);
+        if (!blocked.equals("")) {
+            return blocked;
+        } else if (checkMove(getX(player), getY(player) + 1)) {
             Room currRoom = roomRepository.findByXAndY(getX(player), getY(player) + 1);
-            player.setRoomId(currRoom.getId());
-            personRepository.save(player);
-            return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom();
-        }
-
-        return enemyAttack("You cannot perform that action");
-    }
-
-    @RequestMapping("/move_west")
-    public @ResponseBody String moveLeft() {
-        Person player = personRepository.findById(playerId).get();
-        if (checkMove(getX(player) - 1, getY(player))) {
-            Room currRoom = roomRepository.findByXAndY(getX(player) - 1, getY(player));
             player.setRoomId(currRoom.getId());
             personRepository.save(player);
             return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom();
@@ -277,8 +347,27 @@ public class ZorkController {
     @RequestMapping("/move_east")
     public @ResponseBody String moveRight() {
         Person player = personRepository.findById(playerId).get();
-        if (checkMove(getX(player) + 1, getY(player))) {
+        String blocked = getBlocked(getX(player) + 1, getY(player));
+        if (!blocked.equals("")) {
+            return blocked;
+        } else if (checkMove(getX(player) + 1, getY(player))) {
             Room currRoom = roomRepository.findByXAndY(getX(player) + 1, getY(player));
+            player.setRoomId(currRoom.getId());
+            personRepository.save(player);
+            return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom();
+        }
+
+        return enemyAttack("You cannot perform that action");
+    }
+
+    @RequestMapping("/move_west")
+    public @ResponseBody String moveLeft() {
+        Person player = personRepository.findById(playerId).get();
+        String blocked = getBlocked(getX(player) - 1, getY(player));
+        if (!blocked.equals("")) {
+            return blocked;
+        } else if (checkMove(getX(player) - 1, getY(player))) {
+            Room currRoom = roomRepository.findByXAndY(getX(player) - 1, getY(player));
             player.setRoomId(currRoom.getId());
             personRepository.save(player);
             return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom();
@@ -307,6 +396,37 @@ public class ZorkController {
         return false;
     }
 
+    private String getBlocked(int moveX, int moveY) {
+        Person player = personRepository.findById(playerId).get();
+        Room currRoom = roomRepository.findByXAndY(getX(player), getY(player));
+        Room toRoom = roomRepository.findByXAndY(moveX, moveY);
+        String msg = "";
+
+        if (currRoom != null && toRoom != null) {
+            Passage pass = passageRepository.findByRoomFromAndRoomTo(currRoom.getId(), toRoom.getId());
+            if (pass == null) {
+                pass = passageRepository.findByRoomFromAndRoomTo(toRoom.getId(), currRoom.getId());
+                //if (pass != null && !pass.isReversable()) {
+                //    pass = null;
+                //}
+            }
+            if (pass != null) {
+                ArrayList<Active> blocks = activeRepository.findAllByBlockId(pass.getId());
+                if (blocks.size() > 0) {
+                    msg = "Blocked by ";
+                }
+                for (Active block : blocks) {
+                    if (block.getRoomId() == toRoom.getId()) {
+                        msg += "??? ";
+                    } else {
+                        msg += activeThing(block).getName() + " ";
+                    }
+                }
+            }
+        }
+        return msg.trim();
+    }
+
     @RequestMapping("/reset")
     public @ResponseBody String reset()
     {
@@ -315,11 +435,16 @@ public class ZorkController {
         activeRepository.deleteAll();
         personRepository.deleteAll();
 
-        int max = 20;
+        int size = 50;
         int iterations = 10;
 
-        int startX = max + 5;
-        int startY = max + 5;
+        int startX = size / 2;
+        int startY = size / 2;
+
+
+        roomNames = new ArrayList<>();
+        // Unique room names
+        roomNames.addAll(Arrays.asList(ZorkInfo.ROOM_LIST));
 
         Person player = new Person("Player");
 
@@ -328,6 +453,10 @@ public class ZorkController {
         roomRepository.save(first);
 
         activeRepository.save(newObject(thingRepository.findByName("Stick"), first));
+        activeRepository.save(newObject(thingRepository.findByName("Torch"), first));
+        activeRepository.save(newObject(thingRepository.findByName("Door Key"), first));
+        Active vines = newObject(thingRepository.findByName("Door Lock"), first);
+        activeRepository.save(vines);
 
         player.setRoomId(first.getId());
 
@@ -337,12 +466,10 @@ public class ZorkController {
 
         curr = 1;
 
-        newRoom(20, startX, startY, -1);
-
-        for (int i = 1; i < iterations; i++) {
-            int currMax = r.nextInt(max);
-            newRoom(currMax, startX, startY, -1);
+        while (newRoom(100, startX, startY, size, -1)) {
         }
+
+        setBlock(thingRepository.findByName("Door Lock"), vines);
 
         StringBuilder map = new StringBuilder();
         for (int i = 0; i < startX * 2; i++) {
@@ -359,8 +486,8 @@ public class ZorkController {
         return map.toString();
     }
 
-    private void newRoom(int left, int x, int y, int last) {
-        if (left > 0) {
+    private boolean newRoom(int left, int x, int y, int max, int last) {
+        if (left > 0 && x > 0 && y > 0 && x < max && y < max) {
             Random r = new Random();
             int next = r.nextInt(4);
             if (next == last) {
@@ -384,7 +511,13 @@ public class ZorkController {
             Room roomTo = roomRepository.findByXAndY(x, y);
             boolean added = false;
             if (roomTo == null) {
-                roomTo = new Room("Room " + curr, x, y);
+                String name = "Room " + curr;
+                if (roomNames.size() > 0) {
+                    name = roomNames.remove(r.nextInt(roomNames.size()));
+                } else {
+                    return false;
+                }
+                roomTo = new Room(name, x, y);
                 roomRepository.save(roomTo);
                 curr++;
                 added = true;
@@ -401,8 +534,21 @@ public class ZorkController {
                 setThings(roomTo);
             }
             left--;
-            newRoom(left, x, y, next);
+
+            boolean more = newRoom(left, x, y, max, next);
+
+            if (added) {
+                ArrayList<Active> actives = activeRepository.findAllByRoomId(roomTo.getId());
+                if (actives != null && actives.size() > 0) {
+                    for (Active active : actives) {
+                        setBlock(activeThing(active), active);
+                    }
+                }
+            }
+
+            return more;
         }
+        return true;
     }
 
     private void setThings(Room room) {
@@ -414,23 +560,114 @@ public class ZorkController {
         items.addAll(thingRepository.findAllByType("potion"));
         items.addAll(thingRepository.findAllByType("key"));
         items.addAll(thingRepository.findAllByType("chest"));
+        items.addAll(thingRepository.findAllByType("object"));
+        items.addAll(thingRepository.findAllByType("lock"));
 
         if (r.nextInt(4) == 1) {
             Thing toAdd = money.get(r.nextInt(money.size()));
             activeRepository.save(newObject(toAdd, room));
         }
-        if (r.nextInt(4) == 1) {
+        int max = 3;
+        while (r.nextInt(2) == 1 && max > 0) {
             Thing toAdd = enemies.get(r.nextInt(enemies.size()));
             activeRepository.save(newObject(toAdd, room));
+            max--;
         }
-        if (r.nextInt(2) == 1) {
+        max = 2;
+        while (r.nextInt(2) == 1 && max > 0) {
             Thing toAdd = items.get(r.nextInt(items.size()));
             activeRepository.save(newObject(toAdd, room));
+            max--;
         }
     }
 
     private Active newObject(Thing toAdd, Room room) {
-        return new Active(toAdd.getId(), r.nextInt(1 + toAdd.getValue2() - toAdd.getValue())
-                + toAdd.getValue(), toAdd.getConquer(), room.getId(), 0, -1);
+        Active object = new Active(toAdd.getId(), r.nextInt(1 + toAdd.getValue2() - toAdd.getValue())
+                + toAdd.getValue(), toAdd.getConquer(), room.getId(), -1, -1, toAdd.getStatus());
+        activeRepository.save(object);
+        return object;
+    }
+
+    private void setBlock(Thing toAdd, Active object) {
+        long blockId = 0;
+        if (toAdd.getBlock() > 0) {
+            ArrayList<Passage> passes =
+                    passageRepository.findAllByRoomFromOrRoomToAndReversableTrue(object.getRoomId(), object.getRoomId());
+            if (passes != null && passes.size() > 0) {
+                blockId = passes.get(r.nextInt(passes.size())).getId();
+            }
+        }
+        object.setBlockId(blockId);
+        activeRepository.save(object);
+    }
+
+    private void hide(Active active) {
+        active.setStatus("");
+        active.setBlockId(-1);
+        active.setInvId(-1);
+        active.setRoomId(-1);
+        activeRepository.save(active);
+    }
+
+    private void setDrop(Active active, String item, int chance, boolean unique) {
+        EnemyDrop enemyDrop;
+        if (unique) {
+            enemyDrop = new EnemyDrop(active.getId(), item, chance);
+        } else {
+            enemyDrop = new EnemyDrop(activeThing(active).getName(), item, chance);
+        }
+        dropRepository.save(enemyDrop);
+    }
+
+    private ArrayList<Thing> getDrops(Active active) {
+        ArrayList<Thing> enemyDrops = new ArrayList<>();
+        ArrayList<EnemyDrop> general = dropRepository.findAllByGeneralThing(activeThing(active).getName());
+        if (general != null) {
+            for (EnemyDrop enemyDrop : general) {
+                if (r.nextInt(100) < enemyDrop.getChance()) {
+                    enemyDrops.add(thingRepository.findByName(enemyDrop.getItem()));
+                }
+            }
+        }
+        ArrayList<EnemyDrop> specific = dropRepository.findAllBySpecificActive(activeThing(active).getId());
+        if (specific != null) {
+            for (EnemyDrop enemyDrop : specific) {
+                if (r.nextInt(100) < enemyDrop.getChance()) {
+                    enemyDrops.add(thingRepository.findByName(enemyDrop.getItem()));
+                }
+            }
+        }
+        return enemyDrops;
+    }
+
+    private int amplify(Active equip) {
+        int value = 1;
+        for (String word : equip.getStatus().split(" ")) {
+            Amplify amp = amplifyRepository.findByKeyword(word);
+            if (amp != null) {
+                value += amp.getValue();
+            }
+        }
+        return value;
+    }
+
+    private boolean inInventory(String name) {
+        Thing thing = thingRepository.findByName(name);
+        Person player = personRepository.findById(playerId).get();
+        if (thing != null) {
+            ArrayList<Active> actives = activeRepository.findAllByInvIdAndThingId(player.getId(), thing.getId());
+            if (actives != null && actives.size() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Thing activeThing(Active active) {
+        if (active == null) {
+            return null;
+        } else {
+            return thingRepository.findById(active.getThingId()).get();
+        }
     }
 }
