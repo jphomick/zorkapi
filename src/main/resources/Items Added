@@ -1,11 +1,31 @@
-create database zork;
 use zork;
 
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Gold", 100, 250, "~", 1, 0, "take", "money");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Potion", 20, 20, "~", 1, 0, "take use", "potion");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Stick", 1, 2, "~", 1, 0, "take equip", "weapon");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Bat", 2, 3, "~", 4, 0, "attack", "enemy");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Slime", 1, 2, "~", 10, 0, "attack", "enemy");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Brass Key", 1, 1, "~", 1, 0, "take", "key");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Wooden Chest", 500, 800, "Brass Key", 1, 0, "open", "chest");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type) VALUES("Golf Club", 3, 4, "~", 1, 0, "take equip", "weapon");
+
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Gold", 100, 250, "~", 1, 0, "take", "money", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Potion", 20, 20, "~", 1, 0, "take use", "potion", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Stick", 1, 2, "~", 1, 0, "take equip", "weapon", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Bat", 2, 3, "~", 4, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Slime", 1, 2, "value + (fire * 2)", 10, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Brass Key", 1, 1, "~", 1, 0, "take", "key", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Wooden Chest", 500, 800, "Brass Key", 1, 0, "open", "chest", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Golf Club", 3, 4, "~", 1, 0, "take equip", "weapon", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Metal Chest", 0, 0, "Brass Key", 1, 0, "open", "chest", "Torch");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Torch", 1, 2, "~", 1, 0, "take equip", "weapon", "flammable");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Oil Lamp", 0, 0, "~", 1, 0, "use", "object", "fire");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Vines", 0, 0, "fire * 10", 1, 1, "attack", "object", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Door Key", 1, 1, "Door Key", 1, 0, "take", "key", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Door Lock", 0, 0, "~", 1, 1, "open", "lock", "none");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Compass", 1, 1, "~", 1, 0, "take", "object", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Crab", 2, 4, "value - 1", 8, 0, "attack", "enemy", "wet");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Spider", 5, 8, "value + (fire * 2)", 5, 1, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Sword", 6, 8, "~", 1, 0, "take equip", "weapon", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Skeleton", 3, 5, "~", 24, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Skeleton King", 5, 10, "~", 120, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Chest", 0, 0, "Puzzle Key", 1, 0, "open", "chest", "win");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Key", 1, 1, "~", 1, 0, "take", "key", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Piece", 1, 1, "~", 1, 0, "take", "object", "");
+
+INSERT INTO amplify (keyword, value) VALUES("fire", 2);
+
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Slime", 0, "Door Key", 25);
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Skeleton King", 0, "Puzzle Key", 100);

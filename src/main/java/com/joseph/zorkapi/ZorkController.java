@@ -34,7 +34,7 @@ public class ZorkController {
     @Autowired
     DropRepository dropRepository;
 
-    Random r = new Random();
+    private Random r = new Random();
 
     // For auto room naming
     private int curr = 1;
@@ -43,6 +43,8 @@ public class ZorkController {
 
     // Until we have roles
     private long playerId;
+
+    private ZorkInfo info;
 
     private Active getOne(ArrayList<Active> list) {
         Active active = null;
@@ -96,6 +98,11 @@ public class ZorkController {
                     } else if (active.getStatus().contains("none")) {
                         msg = "You opened the " + thing.getName() + "!";
                     } else {
+                        if (active.getStatus().contains("win")) {
+                            reset();
+                            return "You won the game!\nFinal Score: " +
+                                    player.getMoney() + player.getHealth();
+                        }
                         Thing insideStats = thingRepository.findByName(active.getStatus());
                         Active inside = newObject(insideStats, room);
                         inside.setRoomId(-1);
@@ -135,13 +142,19 @@ public class ZorkController {
                 }
             }
             if (command.toLowerCase().contains("equip")) {
+                msg = "";
                 if (equip != null) {
+                    if (equip.getStatus().contains("fire")) {
+                        equip.setStatus(equip.getStatus().replace("fire", ""));
+                        msg += "You put out the fire on your " + activeThing(equip).getName() + ".\n";
+                    }
                     equip.setValue(0);
+                    activeRepository.save(equip);
                 }
                 active.setValue(-100);
                 active.setInvId(player.getId());
                 active.setRoomId(-1);
-                msg = "You equipped the " + thing.getName() + "!";
+                msg += "You equipped the " + thing.getName() + "!";
             }
             if (command.toLowerCase().contains("attack")) {
                 if (equip == null) {
@@ -203,6 +216,7 @@ public class ZorkController {
         Person player = personRepository.findById(playerId).get();
         ArrayList<Active> all = activeRepository.findAllByRoomId(player.getRoomId());
         ArrayList<Active> enemies = new ArrayList<>();
+        Active equip = activeRepository.findByValue(-100);
         for (Active active : all) {
             if (thingRepository.findById(active.getThingId()).get().getType().equals("enemy")) {
                 enemies.add(active);
@@ -215,10 +229,27 @@ public class ZorkController {
                 int damage = r.nextInt(1 + enemyStats.getValue2() - enemyStats.getValue()) + enemyStats.getValue();
                 player.setHealth(player.getHealth() - damage);
                 msg += enemyStats.getName() + " attacks you for " + damage + " damage!\n";
+                if (active.getStatus().contains("wet") && equip != null && equip.getStatus().contains("fire")) {
+                    msg += "The flame on your weapon was put out!";
+                    equip.setStatus(active.getStatus().replace("fire", "").trim());
+                    activeRepository.save(equip);
+                }
             }
             personRepository.save(player);
         }
         return msg.trim();
+    }
+
+    @RequestMapping("/help")
+    public @ResponseBody String help() {
+        return "Welcome to Zork!\nCan you defeat the Skeleton King and unlock the Puzzle Chest?\n"
+                + "Commands:\n[check] [move] [take] [use] [equip] [attack] [open] [status]\n"
+                + "All commands except [status] require a target, e.g. \"attack bat\"\n"
+                + "For items two words or more, connect the words with -, e.g. \"take brass-key\"\n\n"
+                + "Essential tips:\n"
+                + "\"check move\" will check the directions you can move\n"
+                + "\"check room\" will check the things in the room\n"
+                + "You must equip a weapon to deal damage!";
     }
 
     @RequestMapping("/status")
@@ -303,8 +334,17 @@ public class ZorkController {
         Person player = personRepository.findById(playerId).get();
         Room room = roomRepository.findByXAndY(getX(player), getY(player));
         String result = "Things in the room:\n";
+        ArrayList<Long> found = new ArrayList<>();
         for (Active active : activeRepository.findAllByRoomId(room.getId())) {
-            result += thingRepository.findById(active.getThingId()).get().getName() + "\n";
+            if (!found.contains(active.getThingId())) {
+                int size = activeRepository.findAllByRoomIdAndThingId(player.getRoomId(), active.getThingId()).size();
+                String mult = "";
+                if (size > 1) {
+                    mult = " x" + size;
+                }
+                result += thingRepository.findById(active.getThingId()).get().getName() + mult + "\n";
+                found.add(active.getThingId());
+            }
         }
         if (inInventory("Compass")) {
             result += "---\n" + moveCheck(false);
@@ -434,6 +474,7 @@ public class ZorkController {
         passageRepository.deleteAll();
         activeRepository.deleteAll();
         personRepository.deleteAll();
+        info = new ZorkInfo();
 
         int size = 50;
         int iterations = 10;
@@ -453,10 +494,11 @@ public class ZorkController {
         roomRepository.save(first);
 
         activeRepository.save(newObject(thingRepository.findByName("Stick"), first));
-        activeRepository.save(newObject(thingRepository.findByName("Torch"), first));
-        activeRepository.save(newObject(thingRepository.findByName("Door Key"), first));
-        Active vines = newObject(thingRepository.findByName("Door Lock"), first);
-        activeRepository.save(vines);
+        activeRepository.save(newObject(thingRepository.findByName("Puzzle Chest"), first));
+        //activeRepository.save(newObject(thingRepository.findByName("Torch"), first));
+        //activeRepository.save(newObject(thingRepository.findByName("Door Key"), first));
+        //Active vines = newObject(thingRepository.findByName("Door Lock"), first);
+        //activeRepository.save(vines);
 
         player.setRoomId(first.getId());
 
@@ -469,7 +511,12 @@ public class ZorkController {
         while (newRoom(100, startX, startY, size, -1)) {
         }
 
-        setBlock(thingRepository.findByName("Door Lock"), vines);
+        if (info.addMore("Skeleton King")) {
+            activeRepository.save(newObject(
+                    info.add(thingRepository.findByName("Skeleton King")),
+                    roomRepository.findByName("Throne Room")));
+        }
+        //setBlock(thingRepository.findByName("Door Lock"), vines);
 
         StringBuilder map = new StringBuilder();
         for (int i = 0; i < startX * 2; i++) {
@@ -537,6 +584,11 @@ public class ZorkController {
 
             boolean more = newRoom(left, x, y, max, next);
 
+            if (left == 0 && info.addMore("Skeleton King")) {
+                activeRepository.save(newObject(
+                        info.add(thingRepository.findByName("Skeleton King")), roomTo));
+            }
+
             if (added) {
                 ArrayList<Active> actives = activeRepository.findAllByRoomId(roomTo.getId());
                 if (actives != null && actives.size() > 0) {
@@ -554,30 +606,30 @@ public class ZorkController {
     private void setThings(Room room) {
         ArrayList<Passage> passes = passageRepository.findAllByRoomFromOrRoomToAndReversableTrue(room.getId(), room.getId());
 
-        ArrayList<Thing> money = thingRepository.findAllByType("money");
-        ArrayList<Thing> enemies = thingRepository.findAllByType("enemy");
-        ArrayList<Thing> items = thingRepository.findAllByType("weapon");
-        items.addAll(thingRepository.findAllByType("potion"));
-        items.addAll(thingRepository.findAllByType("key"));
-        items.addAll(thingRepository.findAllByType("chest"));
-        items.addAll(thingRepository.findAllByType("object"));
-        items.addAll(thingRepository.findAllByType("lock"));
+        ArrayList<Thing> money = info.getAvailable("money", thingRepository);
+        ArrayList<Thing> enemies = info.getAvailable("enemy", thingRepository);
+        ArrayList<Thing> items = info.getAvailable("item", thingRepository);
+        ArrayList<Thing> key = info.getAvailable("key item", thingRepository);
 
         if (r.nextInt(4) == 1) {
-            Thing toAdd = money.get(r.nextInt(money.size()));
+            Thing toAdd = info.add(money.get(r.nextInt(money.size())));
             activeRepository.save(newObject(toAdd, room));
         }
         int max = 3;
         while (r.nextInt(2) == 1 && max > 0) {
-            Thing toAdd = enemies.get(r.nextInt(enemies.size()));
+            Thing toAdd = info.add(enemies.get(r.nextInt(enemies.size())));
             activeRepository.save(newObject(toAdd, room));
             max--;
         }
         max = 2;
         while (r.nextInt(2) == 1 && max > 0) {
-            Thing toAdd = items.get(r.nextInt(items.size()));
+            Thing toAdd = info.add(items.get(r.nextInt(items.size())));
             activeRepository.save(newObject(toAdd, room));
             max--;
+        }
+        if (r.nextInt(4) == 1) {
+            Thing toAdd = info.add(key.get(0));
+            activeRepository.save(newObject(toAdd, room));
         }
     }
 
@@ -592,7 +644,7 @@ public class ZorkController {
         long blockId = 0;
         if (toAdd.getBlock() > 0) {
             ArrayList<Passage> passes =
-                    passageRepository.findAllByRoomFromOrRoomToAndReversableTrue(object.getRoomId(), object.getRoomId());
+                    passageRepository.findAllByRoomFrom(object.getRoomId());
             if (passes != null && passes.size() > 0) {
                 blockId = passes.get(r.nextInt(passes.size())).getId();
             }
