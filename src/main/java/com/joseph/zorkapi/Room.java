@@ -22,10 +22,14 @@ public class Room {
     @NonNull
     private long y;
 
+    @NonNull
+    private boolean visited;
+
     public Room(String name, long x, long y) {
         this.name = name;
         this.x = x;
         this.y = y;
+        this.visited = false;
     }
 
     public Room() {
@@ -61,5 +65,13 @@ public class Room {
 
     public void setY(long y) {
         this.y = y;
+    }
+
+    public boolean isVisited() {
+        return visited;
+    }
+
+    public void setVisited(boolean visited) {
+        this.visited = visited;
     }
 }

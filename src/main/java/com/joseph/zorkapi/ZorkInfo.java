@@ -16,15 +16,15 @@ class ZorkInfo {
             "Stalagmites", "Hidden Pond", "Concert Hall", "Empty Room", "Artist's Studio", "Mushroom Alcove",
             "Wine Cellar", "Theater", "Tool Shed", "Trinket Room"};
 
-    static final String[] PROGRESSION = new String[]{"Brass Key", "Metal Chest", "Oil Lamp", "Vines", "Door Lock",
-            "Sword"};
+    static final String[] PROGRESSION = new String[]{"Brass Key", "Metal Chest", "Oil Lamp", "Vines", "Green Slime",
+            "Door Lock", "Sword"};
 
     static final String[] NO_DROP = new String[]{"Door Key", "Torch", "Stick", "Puzzle Chest", "Puzzle Key",
             "Puzzle Piece"};
 
     static final String[] ENEMY_GROWTH = new String[]{"Bat", "Slime", "Crab", "Spider", "Skeleton"};
 
-    static final String[] UNIQUE = new String[]{"Metal Chest", "Compass", "Skeleton King", "Sword"};
+    static final String[] UNIQUE = new String[]{"Metal Chest", "Compass", "Skeleton King", "Sword", "Green Slime"};
 
     static final String[][] PAIRS = new String[][]{{"Brass Key", "Wooden Chest"}, {"Brass Key", "Metal Chest"},
             {"Door Key", "Door Lock"}};
