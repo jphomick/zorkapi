@@ -20,14 +20,15 @@ class ZorkInfo {
             "Door Lock", "Sword"};
 
     static final String[] NO_DROP = new String[]{"Door Key", "Torch", "Stick", "Puzzle Chest", "Puzzle Key",
-            "Puzzle Piece"};
+            "Puzzle Piece", "Brass Key"};
 
     static final String[] ENEMY_GROWTH = new String[]{"Bat", "Slime", "Crab", "Spider", "Skeleton"};
 
-    static final String[] UNIQUE = new String[]{"Metal Chest", "Compass", "Skeleton King", "Sword", "Green Slime"};
+    static final String[] UNIQUE = new String[]{"Metal Chest", "Compass", "Skeleton King", "Sword", "Green Slime",
+            "Golf Club"};
 
     static final String[][] PAIRS = new String[][]{{"Brass Key", "Wooden Chest"}, {"Brass Key", "Metal Chest"},
-            {"Door Key", "Door Lock"}};
+            {"Green Slime", "Door Lock"}};
 
     private ArrayList<String> added;
     private ArrayList<String> unique;
@@ -115,5 +116,9 @@ class ZorkInfo {
             return false;
         }
         return true;
+    }
+
+    String getPair(String initial) {
+        return pairs.get(initial);
     }
 }

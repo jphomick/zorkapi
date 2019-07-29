@@ -193,10 +193,6 @@ public class ZorkController {
                         msg += "\nA " + drop.getName() + " has dropped!";
                         newObject(drop, room);
                     }
-                    if (info.addMore(thing) && (activeRepository.findAllByThingId(thing.getId()) == null ||
-                            activeRepository.findAllByThingId(thing.getId()).size() == 0)) {
-                        newObject(thing, randomRoom(roomRepository.findAllByVisited(true)));
-                    }
                 }
             }
         } else if (!thing.getActions().contains(command)) {
@@ -232,7 +228,7 @@ public class ZorkController {
                 msg += enemyStats.getName() + " attacks you for " + damage + " damage!\n";
                 if (active.getStatus().contains("wet") && equip != null && equip.getStatus().contains("fire")) {
                     msg += "The flame on your weapon was put out!";
-                    equip.setStatus(active.getStatus().replace("fire", "").trim());
+                    equip.setStatus(equip.getStatus().replace("fire", "").trim());
                     activeRepository.save(equip);
                 }
             }
@@ -636,20 +632,26 @@ public class ZorkController {
             activeRepository.save(newObject(toAdd, room));
         }
         int max = 3;
-        while (r.nextInt(2) == 1 && max > 0) {
+        while (r.nextInt(6 - max) == 1 && max > 0) {
             Thing toAdd = info.add(enemies.get(r.nextInt(enemies.size())));
             activeRepository.save(newObject(toAdd, room));
             max--;
         }
         max = 2;
-        while (r.nextInt(2) == 1 && max > 0) {
+        while (r.nextInt(4 - max) == 1 && max > 0) {
             Thing toAdd = info.add(items.get(r.nextInt(items.size())));
             activeRepository.save(newObject(toAdd, room));
+            if (info.getPair(toAdd.getName()) != null) {
+                newObject(thingRepository.findByName(info.getPair(toAdd.getName())), randomRoom());
+            }
             max--;
         }
         if (r.nextInt(4) == 1) {
             Thing toAdd = info.add(key.get(0));
             activeRepository.save(newObject(toAdd, room));
+            if (info.getPair(toAdd.getName()) != null) {
+                newObject(thingRepository.findByName(info.getPair(toAdd.getName())), randomRoom());
+            }
         }
     }
 
@@ -713,7 +715,7 @@ public class ZorkController {
     }
 
     private int amplify(Active equip) {
-        int value = 1;
+        int value = 0;
         for (String word : equip.getStatus().split(" ")) {
             Amplify amp = amplifyRepository.findByKeyword(word);
             if (amp != null) {
@@ -745,10 +747,24 @@ public class ZorkController {
 
     private Room randomRoom() {
         ArrayList<Room> rooms = roomRepository.findAll();
-        return rooms.get(r.nextInt(rooms.size()));
+        int pick = r.nextInt(rooms.size());
+        if (rooms.get(pick).getName().equals("Foyer")) {
+            pick++;
+            if (pick >= rooms.size()) {
+                pick = 0;
+            }
+        }
+        return rooms.get(pick);
     }
 
     private Room randomRoom(ArrayList<Room> rooms) {
-        return rooms.get(r.nextInt(rooms.size()));
+        int pick = r.nextInt(rooms.size());
+        if (rooms.get(pick).getName().equals("Foyer")) {
+            pick++;
+            if (pick >= rooms.size()) {
+                pick = 0;
+            }
+        }
+        return rooms.get(pick);
     }
 }
