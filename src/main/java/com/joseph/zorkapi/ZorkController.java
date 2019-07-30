@@ -55,8 +55,8 @@ public class ZorkController {
     @RequestMapping("/{id}_act_{command}_{target}")
     public @ResponseBody String command(@PathVariable("id") Long playerId, @PathVariable("command") String command, @PathVariable("target") String target) {
         command = command.replace("-", " ");
-        command = StringUtils.capitalize(command);
         target = target.replace("-", " ");
+        target = StringUtils.capitalize(target);
         Person player = personRepository.findById(playerId).get();
         Room room = roomRepository.findById(player.getRoomId()).get();
         Thing thing = thingRepository.findByName(target);
