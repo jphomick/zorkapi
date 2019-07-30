@@ -23,6 +23,14 @@ public class Amplify {
         return id;
     }
 
+    public Amplify(String keyword, int value) {
+        this.keyword = keyword;
+        this.value = value;
+    }
+
+    public Amplify() {
+    }
+
     public void setId(long id) {
         this.id = id;
     }

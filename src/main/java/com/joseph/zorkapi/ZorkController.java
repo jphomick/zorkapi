@@ -587,6 +587,52 @@ public class ZorkController {
         personRepository.deleteAll();
         info = new ZorkInfo();
 
+        if (thingRepository.findByName("Slime") == null) {
+            thingRepository.save(new Thing("Gold", 100, 250, "~", 1, 0, "take", "money", ""));
+            thingRepository.save(new Thing("Potion", 20, 20, "~", 1, 0, "take use", "potion", ""));
+            thingRepository.save(new Thing("Stick", 1, 2, "~", 1, 0, "take equip", "weapon", ""));
+            thingRepository.save(new Thing("Bat", 2, 3, "~", 4, 0, "attack", "enemy", ""));
+            thingRepository.save(new Thing("Slime", 1, 2, "value + (fire * 2)", 10, 0, "attack", "enemy", ""));
+            thingRepository.save(new Thing("Brass Key", 1, 1, "~", 1, 0, "take", "key", ""));
+            thingRepository.save(new Thing("Wooden Chest", 500, 800, "Brass Key", 1, 0, "open", "chest", ""));
+            thingRepository.save(new Thing("Golf Club", 3, 4, "~", 1, 0, "take equip", "weapon", ""));
+            thingRepository.save(new Thing("Metal Chest", 0, 0, "Brass Key", 1, 0, "open", "chest", "Torch"));
+            thingRepository.save(new Thing("Torch", 1, 2, "~", 1, 0, "take equip", "weapon", "flammable"));
+            thingRepository.save(new Thing("Oil Lamp", 0, 0, "~", 1, 0, "use", "object", "fire"));
+            thingRepository.save(new Thing("Vines", 0, 0, "fire * 10", 1, 1, "attack", "object", ""));
+            thingRepository.save(new Thing("Door Key", 1, 1, "Door Key", 1, 0, "take", "key", ""));
+            thingRepository.save(new Thing("Door Lock", 0, 0, "~", 1, 1, "open", "lock", "none"));
+            thingRepository.save(new Thing("Compass", 1, 1, "~", 1, 0, "take", "object", ""));
+            thingRepository.save(new Thing("Crab", 2, 4, "value - 1", 8, 0, "attack", "enemy", "wet"));
+            thingRepository.save(new Thing("Spider", 5, 8, "value + (fire * 2)", 5, 1, "attack", "enemy", ""));
+            thingRepository.save(new Thing("Sword", 6, 8, "~", 1, 0, "take equip", "weapon", ""));
+            thingRepository.save(new Thing("Skeleton", 3, 5, "~", 24, 0, "attack", "enemy", ""));
+            thingRepository.save(new Thing("Skeleton King", 5, 10, "~", 210, 0, "attack", "enemy", ""));
+            thingRepository.save(new Thing("Puzzle Chest", 0, 0, "Puzzle Key", 1, 0, "open", "chest", "win"));
+            thingRepository.save(new Thing("Puzzle Key", 1, 1, "~", 1, 0, "take", "key", ""));
+            thingRepository.save(new Thing("Puzzle Piece", 1, 1, "~", 1, 0, "take", "object", ""));
+            thingRepository.save(new Thing("Green Slime", 3, 4, "value + (fire * 2)", 15, 0, "attack", "enemy", ""));
+            thingRepository.save(new Thing("Shell", 25, 75, "~", 1, 0, "take", "money", ""));
+            thingRepository.save(new Thing("Electric Staff", 1, 2, "~", 1, 0, "take equip", "weapon", "electric"));
+            thingRepository.save(new Thing("Rock Lobster", 5, 6, "value - 1", 26, 0, "attack", "enemy", "wet"));
+            thingRepository.save(new Thing("Armor Shell", 1, 2, "~", 1, 0, "take equip", "armor", ""));
+            thingRepository.save(new Thing("Bomb", 10, 14, "~", 1, 0, "take use", "throw", ""));
+            thingRepository.save(new Thing("Bucket", 0, 0, "~", 1, 0, "take use", "throw", "water"));
+            thingRepository.save(new Thing("Cauldron", 2, 2, "~", 1, 0, "use", "brew", ""));
+            thingRepository.save(new Thing("Nightwood", 7, 7, "value + (fire * 2)", 14, 0, "attack", "enemy", "flammable"));
+            thingRepository.save(new Thing("Megipede", 4, 5, "~", 48, 0, "attack", "enemy", ""));
+            thingRepository.save(new Thing("Stinger", 11, 13, "~", 1, 0, "take equip", "weapon", ""));
+
+            amplifyRepository.save(new Amplify("fire", 2));
+
+            dropRepository.save(new EnemyDrop(-1, "Green Slime", 0, "Door Key", 100));
+            dropRepository.save(new EnemyDrop(-1, "Skeleton King", 0, "Puzzle Key", 100));
+            dropRepository.save(new EnemyDrop(-1, "Skeleton", 0, "Potion", 100));
+            dropRepository.save(new EnemyDrop(-1, "Crab", 0, "Shell", 100));
+            dropRepository.save(new EnemyDrop(-1, "Rock Lobster", 0, "Armor Shell", 100));
+            dropRepository.save(new EnemyDrop(-1, "Megipede", 0, "Stinger", 100));
+        }
+
         int size = 50;
         int iterations = 10;
 
