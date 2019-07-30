@@ -59,6 +59,7 @@ public class ZorkController {
         Room room = roomRepository.findById(player.getRoomId()).get();
         Thing thing = thingRepository.findByName(target);
         Active equip = activeRepository.findByValue(-100);
+        Active armor = activeRepository.findByValue(-200);
         if (thing == null) {
             return "Target not found.";
         }
@@ -122,6 +123,39 @@ public class ZorkController {
                     }
                     msg = "You used the " + thing.getName() + " and restored " +
                             heal + " health!\nCurrent health: " + player.getHealth() + "/100";
+                } else if (thing.getType().equals("throw")) {
+                    hide(active);
+                    msg = "You threw the " + thing.getName() + "!";
+                    ArrayList<Active> enemies = activeRepository.findAllByRoomId(player.getRoomId());
+                    for (Active enemy : enemies) {
+                        if (activeThing(enemy).getType().equals("enemy")) {
+                            msg += applyStatus(enemy, active);
+                            int damage = r.nextInt(1 + thing.getValue2() - thing.getValue()) + thing.getValue();
+                            if (damage > 0) {
+                                enemy.setConquer(enemy.getConquer() - damage);
+                                msg += activeThing(enemy).getName() + " took " + damage + " damage!\n";
+                                msg += defeatEnemy(enemy, room);
+                                activeRepository.save(enemy);
+                            }
+                        }
+                    }
+                } else if (thing.getType().equals("brew")) {
+                    Active potion = getOne(activeRepository.findAllByInvIdAndThingId(player.getId(),
+                            thingRepository.findByName("Potion").getId()));
+                    if (potion != null) {
+                        hide(potion);
+                        int heal = r.nextInt(1 + activeThing(potion).getValue2() -
+                                activeThing(potion).getValue()) + activeThing(potion).getValue();
+                        heal *= 2;
+                        player.setHealth(player.getHealth() + heal);
+                        if (player.getHealth() > 100) {
+                            player.setHealth(100);
+                        }
+                        msg = "You used the " + thing.getName() + " with a " + activeThing(potion).getName()
+                                + " and restored " + heal + " health!\nCurrent health: " + player.getHealth() + "/100";
+                    } else {
+                        msg = "You have no potions to use in the " + thing.getName() + "!";
+                    }
                 } else if (active.getStatus().contains("fire")) {
                     if (equip != null && equip.getStatus().contains("flammable")) {
                         if (equip.getStatus().contains("fire")) {
@@ -139,36 +173,34 @@ public class ZorkController {
                 }
             }
             if (command.toLowerCase().contains("equip")) {
-                msg = "";
-                if (equip != null) {
-                    if (equip.getStatus().contains("fire")) {
-                        equip.setStatus(equip.getStatus().replace("fire", ""));
-                        msg += "You put out the fire on your " + activeThing(equip).getName() + ".\n";
-                    }
-                    equip.setValue(0);
-                    activeRepository.save(equip);
+                if (activeThing(active).getType().contains("weapon")) {
+                    msg = removeEquip(equip);
+                    active.setValue(-100);
+                    active.setInvId(player.getId());
+                    active.setRoomId(-1);
+                } else {
+                    msg = removeEquip(armor);
+                    active.setValue(-200);
+                    active.setInvId(player.getId());
+                    active.setRoomId(-1);
                 }
-                active.setValue(-100);
-                active.setInvId(player.getId());
-                active.setRoomId(-1);
                 msg += "You equipped the " + thing.getName() + "!";
             }
             if (command.toLowerCase().contains("attack")) {
                 if (equip == null) {
                     return "You attacked the " + thing.getName() + "!\n...0 damage!";
                 }
+                Thing weaponStats = thingRepository.findById(equip.getThingId()).get();
+                int base = r.nextInt(1 + weaponStats.getValue2() - weaponStats.getValue())
+                        + weaponStats.getValue();
+                base += amplify(equip);
+                if (equip.getStatus().contains("electric") && active.getStatus().contains("wet")) {
+                    base += r.nextInt(2) + 6;
+                }
                 if (thing.getCode().equals("~")) {
-                    Thing weaponStats = thingRepository.findById(equip.getThingId()).get();
-                    int damage = r.nextInt(1 + weaponStats.getValue2() - weaponStats.getValue())
-                            + weaponStats.getValue();
-                    damage += amplify(equip);
-                    active.setConquer(active.getConquer() - damage);
-                    msg = "You attacked the " + thing.getName() + "!\n" + damage + " damage!";
+                    active.setConquer(active.getConquer() - base);
+                    msg = "You attacked the " + thing.getName() + "!\n" + base + " damage!\n";
                 } else {
-                    Thing weaponStats = thingRepository.findById(equip.getThingId()).get();
-                    int base = r.nextInt(1 + weaponStats.getValue2() - weaponStats.getValue())
-                            + weaponStats.getValue();
-                    base += amplify(equip);
                     String code = thing.getCode();
                     for (String item : code.split("-*[ ()+*/]+")) {
                         if (item.length() > 0 && !NumberHelper.isNumber(item)) {
@@ -183,16 +215,12 @@ public class ZorkController {
                     }
                     int damage = (int)MathHelper.eval(code);
                     active.setConquer(active.getConquer() - damage);
-                    msg = "You attacked the " + thing.getName() + "!\n" + damage + " damage!";
+                    msg = "You attacked the " + thing.getName() + "!\n" + damage + " damage!\n";
                 }
-                if (active.getConquer() <= 0) {
-                    msg += "\nYou defeated the " + thing.getName() + "!";
-                    hide(active);
-                    ArrayList<Thing> drops = getDrops(active);
-                    for (Thing drop : drops) {
-                        msg += "\nA " + drop.getName() + " has dropped!";
-                        newObject(drop, room);
-                    }
+                if (active.getConquer() > 0) {
+                    msg += applyStatus(active, equip);
+                } else {
+                    msg += defeatEnemy(active, room);
                 }
             }
         } else if (!thing.getActions().contains(command)) {
@@ -205,6 +233,53 @@ public class ZorkController {
         }
         msg = enemyAttack(msg, playerId);
         personRepository.save(player);
+        return msg.trim();
+    }
+
+    private String applyStatus(Active target, Active source) {
+        String msg = "";
+        if (target.getStatus().contains("flammable") && !target.getStatus().contains("wet")
+                && source.getStatus().contains("fire")) {
+            target.setStatus(target.getStatus() + " fire");
+            msg += activeThing(target).getName() + " has been set on fire!\n";
+        } else if (target.getStatus().contains("fire") && source.getStatus().contains("water")) {
+            target.setStatus(target.getStatus().replace("fire", "").trim());
+            msg += activeThing(target).getName() + "'s fire has been put out!\n";
+        }
+        if (source.getStatus().contains("water")) {
+            target.setStatus(target.getStatus() + " wet");
+            msg += activeThing(target).getName() + " is now wet!\n";
+        }
+        activeRepository.save(target);
+        return msg;
+    }
+
+    private String defeatEnemy(Active active, Room room) {
+        String msg = "";
+        if (active.getConquer() <= 0) {
+            msg += "You defeated the " + activeThing(active).getName() + "!\n";
+            hide(active);
+            ArrayList<Thing> drops = getDrops(active);
+            for (Thing drop : drops) {
+                msg += "A " + drop.getName() + " has dropped!\n";
+                newObject(drop, room);
+            }
+            activeRepository.save(active);
+        }
+        return msg;
+    }
+
+    private String removeEquip(Active equip) {
+        String msg;
+        msg = "";
+        if (equip != null) {
+            if (equip.getStatus().contains("fire")) {
+                equip.setStatus(equip.getStatus().replace("fire", ""));
+                msg += "You put out the fire on your " + activeThing(equip).getName() + ".\n";
+            }
+            equip.setValue(0);
+            activeRepository.save(equip);
+        }
         return msg;
     }
 
@@ -214,6 +289,7 @@ public class ZorkController {
         ArrayList<Active> all = activeRepository.findAllByRoomId(player.getRoomId());
         ArrayList<Active> enemies = new ArrayList<>();
         Active equip = activeRepository.findByValue(-100);
+        Active armor = activeRepository.findByValue(-200);
         for (Active active : all) {
             if (thingRepository.findById(active.getThingId()).get().getType().equals("enemy")) {
                 enemies.add(active);
@@ -224,6 +300,14 @@ public class ZorkController {
             for (Active active : enemies) {
                 Thing enemyStats = thingRepository.findById(active.getThingId()).get();
                 int damage = r.nextInt(1 + enemyStats.getValue2() - enemyStats.getValue()) + enemyStats.getValue();
+                if (armor != null) {
+                    Thing armorStats = thingRepository.findById(armor.getThingId()).get();
+                    damage -= r.nextInt(1 + armorStats.getValue2() - armorStats.getValue())
+                            + armorStats.getValue();
+                    if (damage < 0) {
+                        damage = 0;
+                    }
+                }
                 player.setHealth(player.getHealth() - damage);
                 msg += enemyStats.getName() + " attacks you for " + damage + " damage!\n";
                 if (active.getStatus().contains("wet") && equip != null && equip.getStatus().contains("fire")) {
@@ -268,6 +352,10 @@ public class ZorkController {
                 }
                 Active equip = activeRepository.findByValue(-100);
                 if (equip != null && equip.getThingId() == active.getThingId()) {
+                    mult += " (equipped)";
+                }
+                Active armor = activeRepository.findByValue(-200);
+                if (armor != null && armor.getThingId() == active.getThingId()) {
                     mult += " (equipped)";
                 }
                 result += thingRepository.findById(active.getThingId()).get().getName() + mult + "\n";
@@ -676,7 +764,6 @@ public class ZorkController {
     }
 
     private void hide(Active active) {
-        active.setStatus("");
         active.setBlockId(-1);
         active.setInvId(-1);
         active.setRoomId(-1);

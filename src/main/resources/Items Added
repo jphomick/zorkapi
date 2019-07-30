@@ -20,12 +20,34 @@ INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, sta
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Spider", 5, 8, "value + (fire * 2)", 5, 1, "attack", "enemy", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Sword", 6, 8, "~", 1, 0, "take equip", "weapon", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Skeleton", 3, 5, "~", 24, 0, "attack", "enemy", "");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Skeleton King", 5, 10, "~", 120, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Skeleton King", 5, 10, "~", 210, 0, "attack", "enemy", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Chest", 0, 0, "Puzzle Key", 1, 0, "open", "chest", "win");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Key", 1, 1, "~", 1, 0, "take", "key", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Piece", 1, 1, "~", 1, 0, "take", "object", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Green Slime", 3, 4, "value + (fire * 2)", 15, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Shell", 25, 75, "~", 1, 0, "take", "money", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Electric Staff", 1, 2, "~", 1, 0, "take equip", "weapon", "electric");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Rock Lobster", 5, 6, "value - 1", 26, 0, "attack", "enemy", "wet");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Armor Shell", 1, 2, "~", 1, 0, "take equip", "armor", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Bomb", 10, 14, "~", 1, 0, "take use", "throw", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Bucket", 0, 0, "~", 1, 0, "take use", "throw", "water");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Cauldron", 2, 2, "~", 1, 0, "use", "brew", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Nightwood", 7, 7, "value + (fire * 2)", 14, 0, "attack", "enemy", "flammable");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Megipede", 4, 5, "~", 48, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Stinger", 11, 13, "~", 1, 0, "take equip", "weapon", "");
 
 INSERT INTO amplify (keyword, value) VALUES("fire", 2);
 
-INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Slime", 0, "Door Key", 25);
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Green Slime", 0, "Door Key", 100);
 INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Skeleton King", 0, "Puzzle Key", 100);
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Skeleton", 0, "Potion", 100);
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Crab", 0, "Shell", 100);
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Rock Lobster", 0, "Armor Shell", 100);
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Megipede", 0, "Stinger", 100);
+
+UPDATE thing SET code = "value + (fire * 2)" WHERE name = "Slime";
+UPDATE thing SET code = "Door Key" WHERE name = "Door Lock";
+UPDATE thing SET conquer = "15" WHERE name = "Green Slime";
+UPDATE thing SET value = "11", value2 = "13" WHERE name = "Stinger";
+UPDATE thing SET conquer = "210" WHERE name = "Skeleton King";
+UPDATE thing SET value = "10", value2 = "14" WHERE name = "Skeleton King";
