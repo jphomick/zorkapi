@@ -2,6 +2,7 @@ package com.joseph.zorkapi;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -54,6 +55,7 @@ public class ZorkController {
     @RequestMapping("/{id}_act_{command}_{target}")
     public @ResponseBody String command(@PathVariable("id") Long playerId, @PathVariable("command") String command, @PathVariable("target") String target) {
         command = command.replace("-", " ");
+        command = StringUtils.capitalize(command);
         target = target.replace("-", " ");
         Person player = personRepository.findById(playerId).get();
         Room room = roomRepository.findById(player.getRoomId()).get();
