@@ -587,7 +587,6 @@ public class ZorkController {
         personRepository.deleteAll();
         info = new ZorkInfo();
 
-        if (thingRepository.findByName("Slime") == null) {
             thingRepository.save(new Thing("Gold", 100, 250, "~", 1, 0, "take", "money", ""));
             thingRepository.save(new Thing("Potion", 20, 20, "~", 1, 0, "take use", "potion", ""));
             thingRepository.save(new Thing("Stick", 1, 2, "~", 1, 0, "take equip", "weapon", ""));
@@ -631,7 +630,7 @@ public class ZorkController {
             dropRepository.save(new EnemyDrop(-1, "Crab", 0, "Shell", 100));
             dropRepository.save(new EnemyDrop(-1, "Rock Lobster", 0, "Armor Shell", 100));
             dropRepository.save(new EnemyDrop(-1, "Megipede", 0, "Stinger", 100));
-        }
+        
 
         int size = 50;
         int iterations = 10;
