@@ -16,16 +16,17 @@ class ZorkInfo {
             "Stalagmites", "Hidden Pond", "Concert Hall", "Empty Room", "Artist's Studio", "Mushroom Alcove",
             "Wine Cellar", "Theater", "Tool Shed", "Trinket Room"};
 
-    static final String[] PROGRESSION = new String[]{"Brass Key", "Metal Chest", "Oil Lamp", "Vines", "Green Slime",
-            "Door Lock", "Sword"};
+    static final String[] PROGRESSION = new String[]{"Metal Chest", "Oil Lamp", "Vines", "Golf Club", "Electric Staff",
+            "Door Lock", "Cauldron", "Sword"};
 
     static final String[] NO_DROP = new String[]{"Door Key", "Torch", "Stick", "Puzzle Chest", "Puzzle Key",
-            "Puzzle Piece", "Brass Key"};
+            "Puzzle Piece", "Brass Key", "Stinger", "Shell"};
 
-    static final String[] ENEMY_GROWTH = new String[]{"Bat", "Slime", "Crab", "Spider", "Skeleton"};
+    static final String[] ENEMY_GROWTH = new String[]{"Bat", "Slime", "Crab", "Spider", "Skeleton", "Rock Lobster",
+            "Nightwood", "Megipede"};
 
-    static final String[] UNIQUE = new String[]{"Metal Chest", "Compass", "Skeleton King", "Sword", "Green Slime",
-            "Golf Club"};
+    static final String[] UNIQUE = new String[]{"Metal Chest", "Compass", "Skeleton King", "Sword",
+            "Golf Club", "Electric Staff"};
 
     static final String[][] PAIRS = new String[][]{{"Brass Key", "Wooden Chest"}, {"Brass Key", "Metal Chest"},
             {"Green Slime", "Door Lock"}};
@@ -54,7 +55,7 @@ class ZorkInfo {
         ArrayList<Thing> things = new ArrayList<>();
 
         if (keyword.equals("money")) {
-            things.addAll(thingRepository.findAllByType("money"));
+            things.add(thingRepository.findByName("Gold"));
         } else if (keyword.equals("enemy")) {
             int lower = new Random().nextInt(1 + growth);
             if (lower >= ENEMY_GROWTH.length) {
@@ -70,6 +71,8 @@ class ZorkInfo {
             things.addAll(thingRepository.findAllByType("chest"));
             things.addAll(thingRepository.findAllByType("object"));
             things.addAll(thingRepository.findAllByType("lock"));
+            things.addAll(thingRepository.findAllByType("brew"));
+            things.addAll(thingRepository.findAllByType("throw"));
 
             for (int i = progression + 1; i < PROGRESSION.length; i++) {
                 things.remove(thingRepository.findByName(PROGRESSION[i]));
