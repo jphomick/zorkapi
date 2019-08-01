@@ -124,4 +124,15 @@ class ZorkInfo {
     String getPair(String initial) {
         return pairs.get(initial);
     }
+
+    ArrayList<String> getLeft() {
+        ArrayList<String> left = new ArrayList<>();
+        for (int i = progression; i < PROGRESSION.length; i++) {
+            left.add(PROGRESSION[i]);
+        }
+        for (int i = growth; i < ENEMY_GROWTH.length; i++) {
+            left.add(ENEMY_GROWTH[i]);
+        }
+        return left;
+    }
 }

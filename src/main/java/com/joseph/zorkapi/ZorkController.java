@@ -674,6 +674,12 @@ public class ZorkController {
         while (newRoom(100, startX, startY, size, -1)) {
         }
 
+        for (String item : info.getLeft()) {
+            activeRepository.save(newObject(
+                    info.add(thingRepository.findByName(item)),
+                    randomRoom()));
+        }
+
         if (info.addMore("Skeleton King")) {
             activeRepository.save(newObject(
                     info.add(thingRepository.findByName("Skeleton King")),
