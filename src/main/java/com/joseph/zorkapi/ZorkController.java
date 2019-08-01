@@ -130,7 +130,7 @@ public class ZorkController {
                             heal + " health!\nCurrent health: " + player.getHealth() + "/100";
                 } else if (thing.getType().equals("throw")) {
                     hide(active);
-                    msg = "You threw the " + thing.getName() + "!";
+                    msg = "You threw the " + thing.getName() + "!\n";
                     ArrayList<Active> enemies = activeRepository.findAllByRoomId(player.getRoomId());
                     for (Active enemy : enemies) {
                         if (activeThing(enemy).getType().equals("enemy")) {
