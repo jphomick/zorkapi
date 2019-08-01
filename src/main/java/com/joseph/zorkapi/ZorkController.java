@@ -332,7 +332,7 @@ public class ZorkController {
 
     @RequestMapping("/help")
     public @ResponseBody String help() {
-        return "Welcome to Zork!\nCan you defeat the Skeleton King and unlock the Puzzle Chest?\n"
+        return "Welcome to Zork!\nCan you defeat the Skeleton King and unlock the Puzzle Chest?\n\n"
                 + "Commands:\n[check] [move] [take] [use] [equip] [attack] [open] [status]\n"
                 + "All commands except [status] require a target, e.g. \"attack bat\"\n"
                 + "For items two words or more, connect the words with -, e.g. \"take brass-key\"\n\n"
