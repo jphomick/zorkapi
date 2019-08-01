@@ -596,7 +596,7 @@ public class ZorkController {
         personRepository.deleteAll();
         info = new ZorkInfo();
 
-        
+        /*
         thingRepository.deleteAll();
         amplifyRepository.deleteAll();
         dropRepository.deleteAll();
@@ -644,7 +644,7 @@ public class ZorkController {
         dropRepository.save(new EnemyDrop(-1, "Crab", 0, "Shell", 100));
         dropRepository.save(new EnemyDrop(-1, "Rock Lobster", 0, "Armor Shell", 100));
         dropRepository.save(new EnemyDrop(-1, "Megipede", 0, "Stinger", 100));
-
+        */
 
         int size = 50;
         int iterations = 10;

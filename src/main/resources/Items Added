@@ -24,7 +24,7 @@ INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, sta
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Chest", 0, 0, "Puzzle Key", 1, 0, "open", "chest", "win");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Key", 1, 1, "~", 1, 0, "take", "key", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Puzzle Piece", 1, 1, "~", 1, 0, "take", "object", "");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Green Slime", 3, 4, "value + (fire * 2)", 15, 0, "attack", "enemy", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Green Slime", 3, 4, "value + (fire * 2)", 14, 0, "attack", "enemy", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Shell", 25, 75, "~", 1, 0, "take", "money", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Electric Staff", 1, 2, "~", 1, 0, "take equip", "weapon", "electric");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Rock Lobster", 5, 6, "value - 1", 26, 0, "attack", "enemy", "wet");
@@ -40,6 +40,7 @@ INSERT INTO amplify (keyword, value) VALUES("fire", 2);
 
 INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Green Slime", 0, "Door Key", 100);
 INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Skeleton King", 0, "Puzzle Key", 100);
+INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Slime", 0, "Potion", 50);
 INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Skeleton", 0, "Potion", 100);
 INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Crab", 0, "Shell", 100);
 INSERT INTO enemy_drop (specific_active, general_thing, type, item, chance) VALUES(-1, "Rock Lobster", 0, "Armor Shell", 100);
