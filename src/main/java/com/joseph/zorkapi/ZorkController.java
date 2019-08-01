@@ -316,7 +316,7 @@ public class ZorkController {
                 player.setHealth(player.getHealth() - damage);
                 msg += enemyStats.getName() + " attacks you for " + damage + " damage!\n";
                 if (active.getStatus().contains("wet") && equip != null && equip.getStatus().contains("fire")) {
-                    msg += "The flame on your weapon was put out!";
+                    msg += "The flame on your weapon was put out!\n";
                     equip.setStatus(equip.getStatus().replace("fire", "").trim());
                     activeRepository.save(equip);
                 }
