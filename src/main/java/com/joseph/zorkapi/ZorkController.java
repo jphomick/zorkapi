@@ -193,7 +193,7 @@ public class ZorkController {
             }
             if (command.toLowerCase().contains("attack")) {
                 if (equip == null) {
-                    return "You attacked the " + thing.getName() + "!\n...0 damage!";
+                    return enemyAttack("You attacked the " + thing.getName() + "!\n...0 damage!", playerId).trim();
                 }
                 Thing weaponStats = thingRepository.findById(equip.getThingId()).get();
                 int base = r.nextInt(1 + weaponStats.getValue2() - weaponStats.getValue())
