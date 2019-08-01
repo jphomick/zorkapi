@@ -13,8 +13,8 @@ INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, sta
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Torch", 1, 2, "~", 1, 0, "take equip", "weapon", "flammable");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Oil Lamp", 0, 0, "~", 1, 0, "use", "object", "fire");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Vines", 0, 0, "fire * 10", 1, 1, "attack", "object", "");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Door Key", 1, 1, "Door Key", 1, 0, "take", "key", "");
-INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Door Lock", 0, 0, "~", 1, 1, "open", "lock", "none");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Door Key", 1, 1, "~", 1, 0, "take", "key", "");
+INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Door Lock", 0, 0, "Door Key", 1, 1, "open", "lock", "none");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Compass", 1, 1, "~", 1, 0, "take", "object", "");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Crab", 2, 4, "value - 1", 8, 0, "attack", "enemy", "wet");
 INSERT INTO thing (name, value, value2, code, conquer, block, actions, type, status) VALUES("Spider", 5, 8, "value + (fire * 2)", 5, 1, "attack", "enemy", "");

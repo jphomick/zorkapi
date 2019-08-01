@@ -10,8 +10,8 @@ thingRepository.save(new Thing("Metal Chest", 0, 0, "Brass Key", 1, 0, "open", "
 thingRepository.save(new Thing("Torch", 1, 2, "~", 1, 0, "take equip", "weapon", "flammable"));
 thingRepository.save(new Thing("Oil Lamp", 0, 0, "~", 1, 0, "use", "object", "fire"));
 thingRepository.save(new Thing("Vines", 0, 0, "fire * 10", 1, 1, "attack", "object", ""));
-thingRepository.save(new Thing("Door Key", 1, 1, "Door Key", 1, 0, "take", "key", ""));
-thingRepository.save(new Thing("Door Lock", 0, 0, "~", 1, 1, "open", "lock", "none"));
+thingRepository.save(new Thing("Door Key", 1, 1, "~", 1, 0, "take", "key", ""));
+thingRepository.save(new Thing("Door Lock", 0, 0, "Door Key", 1, 1, "open", "lock", "none"));
 thingRepository.save(new Thing("Compass", 1, 1, "~", 1, 0, "take", "object", ""));
 thingRepository.save(new Thing("Crab", 2, 4, "value - 1", 8, 0, "attack", "enemy", "wet"));
 thingRepository.save(new Thing("Spider", 5, 8, "value + (fire * 2)", 5, 1, "attack", "enemy", ""));
