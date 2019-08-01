@@ -596,7 +596,7 @@ public class ZorkController {
         personRepository.deleteAll();
         info = new ZorkInfo();
 
-
+        
         thingRepository.deleteAll();
         amplifyRepository.deleteAll();
         dropRepository.deleteAll();
@@ -623,7 +623,7 @@ public class ZorkController {
         thingRepository.save(new Thing("Puzzle Chest", 0, 0, "Puzzle Key", 1, 0, "open", "chest", "win"));
         thingRepository.save(new Thing("Puzzle Key", 1, 1, "~", 1, 0, "take", "key", ""));
         thingRepository.save(new Thing("Puzzle Piece", 1, 1, "~", 1, 0, "take", "object", ""));
-        thingRepository.save(new Thing("Green Slime", 3, 4, "value + (fire * 2)", 15, 0, "attack", "enemy", ""));
+        thingRepository.save(new Thing("Green Slime", 3, 4, "value + (fire * 2)", 14, 0, "attack", "enemy", ""));
         thingRepository.save(new Thing("Shell", 25, 75, "~", 1, 0, "take", "money", ""));
         thingRepository.save(new Thing("Electric Staff", 1, 2, "~", 1, 0, "take equip", "weapon", "electric"));
         thingRepository.save(new Thing("Rock Lobster", 5, 6, "value - 1", 26, 0, "attack", "enemy", "wet"));
@@ -639,11 +639,12 @@ public class ZorkController {
 
         dropRepository.save(new EnemyDrop(-1, "Green Slime", 0, "Door Key", 100));
         dropRepository.save(new EnemyDrop(-1, "Skeleton King", 0, "Puzzle Key", 100));
+        dropRepository.save(new EnemyDrop(-1, "Slime", 0, "Potion", 50));
         dropRepository.save(new EnemyDrop(-1, "Skeleton", 0, "Potion", 100));
         dropRepository.save(new EnemyDrop(-1, "Crab", 0, "Shell", 100));
         dropRepository.save(new EnemyDrop(-1, "Rock Lobster", 0, "Armor Shell", 100));
         dropRepository.save(new EnemyDrop(-1, "Megipede", 0, "Stinger", 100));
-        
+
 
         int size = 50;
         int iterations = 10;
