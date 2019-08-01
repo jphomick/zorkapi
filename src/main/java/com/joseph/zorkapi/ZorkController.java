@@ -472,7 +472,7 @@ public class ZorkController {
             roomRepository.save(currRoom);
             player.setRoomId(currRoom.getId());
             personRepository.save(player);
-            return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
+            return "You moved north to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
         }
 
         return enemyAttack("You cannot perform that action", playerId);
@@ -490,7 +490,7 @@ public class ZorkController {
             roomRepository.save(currRoom);
             player.setRoomId(currRoom.getId());
             personRepository.save(player);
-            return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
+            return "You moved south to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
         }
 
         return enemyAttack("You cannot perform that action", playerId);
@@ -508,7 +508,7 @@ public class ZorkController {
             roomRepository.save(currRoom);
             player.setRoomId(currRoom.getId());
             personRepository.save(player);
-            return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
+            return "You moved east to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
         }
 
         return enemyAttack("You cannot perform that action", playerId);
@@ -526,7 +526,7 @@ public class ZorkController {
             roomRepository.save(currRoom);
             player.setRoomId(currRoom.getId());
             personRepository.save(player);
-            return "You moved to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
+            return "You moved west to " + currRoom.getName() + "!" + "\n" + seeRoom(playerId);
         }
 
         return enemyAttack("You cannot perform that action", playerId);
