@@ -46,8 +46,12 @@ public class ZorkController {
 
     private Active getOne(ArrayList<Active> list) {
         Active active = null;
-        if (list != null && list.size() > 0) {
-            active = list.get(0);
+        int min = Integer.MAX_VALUE;
+        for (Active possible : list) {
+            if (possible.getConquer() < min) {
+                active = possible;
+                min = possible.getConquer();
+            }
         }
         return active;
     }
@@ -200,7 +204,7 @@ public class ZorkController {
                         + weaponStats.getValue();
                 base += amplify(equip);
                 if (equip.getStatus().contains("electric") && active.getStatus().contains("wet")) {
-                    base += r.nextInt(2) + 6;
+                    base += r.nextInt(3) + 6;
                 }
                 if (thing.getCode().equals("~")) {
                     active.setConquer(active.getConquer() - base);
@@ -592,7 +596,7 @@ public class ZorkController {
         personRepository.deleteAll();
         info = new ZorkInfo();
 
-        /*
+
         thingRepository.deleteAll();
         amplifyRepository.deleteAll();
         dropRepository.deleteAll();
@@ -615,7 +619,7 @@ public class ZorkController {
         thingRepository.save(new Thing("Spider", 5, 8, "value + (fire * 2)", 5, 1, "attack", "enemy", ""));
         thingRepository.save(new Thing("Sword", 6, 8, "~", 1, 0, "take equip", "weapon", ""));
         thingRepository.save(new Thing("Skeleton", 3, 5, "~", 24, 0, "attack", "enemy", ""));
-        thingRepository.save(new Thing("Skeleton King", 5, 10, "~", 210, 0, "attack", "enemy", ""));
+        thingRepository.save(new Thing("Skeleton King", 8, 12, "~", 210, 0, "attack", "enemy", ""));
         thingRepository.save(new Thing("Puzzle Chest", 0, 0, "Puzzle Key", 1, 0, "open", "chest", "win"));
         thingRepository.save(new Thing("Puzzle Key", 1, 1, "~", 1, 0, "take", "key", ""));
         thingRepository.save(new Thing("Puzzle Piece", 1, 1, "~", 1, 0, "take", "object", ""));
@@ -639,7 +643,7 @@ public class ZorkController {
         dropRepository.save(new EnemyDrop(-1, "Crab", 0, "Shell", 100));
         dropRepository.save(new EnemyDrop(-1, "Rock Lobster", 0, "Armor Shell", 100));
         dropRepository.save(new EnemyDrop(-1, "Megipede", 0, "Stinger", 100));
-        */
+        
 
         int size = 50;
         int iterations = 10;

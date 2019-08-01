@@ -17,7 +17,7 @@ thingRepository.save(new Thing("Crab", 2, 4, "value - 1", 8, 0, "attack", "enemy
 thingRepository.save(new Thing("Spider", 5, 8, "value + (fire * 2)", 5, 1, "attack", "enemy", ""));
 thingRepository.save(new Thing("Sword", 6, 8, "~", 1, 0, "take equip", "weapon", ""));
 thingRepository.save(new Thing("Skeleton", 3, 5, "~", 24, 0, "attack", "enemy", ""));
-thingRepository.save(new Thing("Skeleton King", 5, 10, "~", 210, 0, "attack", "enemy", ""));
+thingRepository.save(new Thing("Skeleton King", 8, 12, "~", 210, 0, "attack", "enemy", ""));
 thingRepository.save(new Thing("Puzzle Chest", 0, 0, "Puzzle Key", 1, 0, "open", "chest", "win"));
 thingRepository.save(new Thing("Puzzle Key", 1, 1, "~", 1, 0, "take", "key", ""));
 thingRepository.save(new Thing("Puzzle Piece", 1, 1, "~", 1, 0, "take", "object", ""));
